@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Hilo del Poder — Mexico: Biography of Power</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1E8D6;
+    --paper-deep:#E7DBBE;
+    --paper-card:#FAF4E6;
+    --ink:#241C15;
+    --ink-soft:#5A4E40;
+    --ink-faint:#8A7C68;
+    --rule:#CBBB9A;
+    --copper:#56715F;
+    --copper-deep:#3F5347;
+    --brick:#A13D2C;
+    --gold:#B98B2E;
+    --indigo:#3F4E63;
+
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Source Serif 4', serif;
+    --font-ui: 'Inter', sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -5%, rgba(161,61,44,0.06), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 90% 10%, rgba(86,113,95,0.07), transparent 55%),
+      var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+
+  ::selection{background:var(--gold); color:var(--paper-card);}
+
+  a{color:inherit;}
+
+  /* ---------- Header ---------- */
+  header.hero{
+    max-width:920px;
+    margin:0 auto;
+    padding:72px 28px 40px;
+    text-align:left;
+    border-bottom:1px solid var(--rule);
+  }
+  .eyebrow{
+    font-family:var(--font-ui);
+    font-size:12.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--brick);
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  h1.title{
+    font-family:var(--font-display);
+    font-optical-sizing:auto;
+    font-weight:600;
+    font-size:clamp(38px, 6vw, 64px);
+    line-height:1.02;
+    margin:0 0 6px;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  h1.title em{
+    font-style:italic;
+    font-weight:500;
+    color:var(--copper-deep);
+  }
+  .subtitle{
+    font-family:var(--font-display);
+    font-style:italic;
+    font-weight:500;
+    font-size:clamp(17px,2.4vw,21px);
+    color:var(--ink-soft);
+    margin:0 0 22px;
+  }
+  .intro{
+    font-family:var(--font-body);
+    font-size:16.5px;
+    color:var(--ink-soft);
+    max-width:62ch;
+    margin:0;
+  }
+  .intro strong{color:var(--ink); font-weight:600;}
+
+  /* ---------- Controls ---------- */
+  .controls{
+    max-width:920px;
+    margin:0 auto;
+    padding:28px 28px 18px;
+    position:sticky;
+    top:0;
+    background:var(--paper);
+    box-shadow:0 14px 18px -14px rgba(36,28,21,0.12);
+    z-index:20;
+  }
+  .control-row{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:12px;
+  }
+  .control-label{
+    font-family:var(--font-ui);
+    font-size:11px;
+    letter-spacing:0.13em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    font-weight:600;
+    width:64px;
+    flex-shrink:0;
+  }
+  .chips{display:flex; gap:7px; flex-wrap:wrap;}
+  .chip{
+    font-family:var(--font-ui);
+    font-size:12.5px;
+    font-weight:500;
+    padding:8px 13px;
+    min-height:34px;
+    border-radius:100px;
+    border:1px solid var(--rule);
+    background:var(--paper-card);
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all 0.15s ease;
+    line-height:1.3;
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .chip:hover{border-color:var(--ink-faint); color:var(--ink);}
+  .chip.active{
+    background:var(--ink);
+    border-color:var(--ink);
+    color:var(--paper-card);
+  }
+  .chip .dot{
+    display:inline-block;
+    width:7px;height:7px;
+    border-radius:50%;
+    margin-right:6px;
+    vertical-align:middle;
+    position:relative;
+    top:-1px;
+  }
+  .search-input{
+    font-family:var(--font-ui);
+    font-size:14.5px;
+    padding:9px 12px 9px 32px;
+    min-height:34px;
+    border-radius:100px;
+    border:1px solid var(--rule);
+    background:var(--paper-card) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%238A7C68" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>') no-repeat 10px center;
+    background-size:13px 13px;
+    color:var(--ink);
+    width:220px;
+    max-width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .search-input::placeholder{color:var(--ink-faint);}
+  .search-input:focus{outline:2px solid var(--copper-deep); outline-offset:1px;}
+
+  .year-range{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:1;
+    min-width:220px;
+  }
+  .year-range-track{
+    position:relative;
+    flex:1;
+    height:26px;
+    min-width:140px;
+  }
+  .year-range-track input[type="range"]{
+    position:absolute;
+    top:9px; left:0;
+    width:100%;
+    margin:0;
+    -webkit-appearance:none;
+    appearance:none;
+    background:transparent;
+    pointer-events:none;
+  }
+  .year-range-track input[type="range"]::-webkit-slider-runnable-track{
+    height:3px;
+    background:transparent;
+  }
+  .year-range-track input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    pointer-events:auto;
+    width:15px; height:15px;
+    border-radius:50%;
+    background:var(--paper-card);
+    border:2.5px solid var(--copper-deep);
+    cursor:pointer;
+    margin-top:-6px;
+  }
+  .year-range-track input[type="range"]::-moz-range-thumb{
+    pointer-events:auto;
+    width:15px; height:15px;
+    border-radius:50%;
+    background:var(--paper-card);
+    border:2.5px solid var(--copper-deep);
+    cursor:pointer;
+  }
+  @media (pointer:coarse){
+    .year-range-track{height:34px;}
+    .year-range-track input[type="range"]{top:15px;}
+    .year-range-track input[type="range"]::-webkit-slider-thumb{
+      width:24px; height:24px; margin-top:-11px; border-width:3px;
+    }
+    .year-range-track input[type="range"]::-moz-range-thumb{
+      width:24px; height:24px; border-width:3px;
+    }
+    .year-range-rail, .year-range-fill{top:18px;}
+  }
+  .year-range-track input[type="range"]::-moz-range-track{
+    height:3px;
+    background:transparent;
+  }
+  .year-range-rail{
+    position:absolute;
+    top:12px; left:0; right:0;
+    height:3px;
+    background:var(--rule);
+    border-radius:2px;
+  }
+  .year-range-fill{
+    position:absolute;
+    top:12px; height:3px;
+    background:var(--copper-deep);
+    border-radius:2px;
+  }
+  .year-range-labels{
+    font-family:var(--font-ui);
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+
+  .reset-btn{
+    font-family:var(--font-ui);
+    font-size:12px;
+    font-weight:600;
+    color:var(--brick);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding:6px 4px;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    opacity:0.75;
+  }
+  .reset-btn:hover{opacity:1;}
+  .result-count{
+    font-family:var(--font-ui);
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:2px;
+  }
+
+  /* ---------- Timeline ---------- */
+  .timeline-wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:20px 28px 120px;
+    position:relative;
+  }
+  .spine{
+    position:absolute;
+    left:52px;
+    top:8px;
+    bottom:60px;
+    width:2px;
+    background:linear-gradient(var(--rule), var(--rule) 96%, transparent);
+  }
+  @media (max-width:640px){
+    .spine{left:26px;}
+  }
+
+  @media (max-width:640px){
+    header.hero{padding:44px 20px 28px;}
+    .controls{padding:18px 20px 14px;}
+    .timeline-wrap{padding:20px 20px 100px;}
+    footer{padding:0 20px 60px;}
+    .control-row{
+      flex-direction:column;
+      align-items:stretch;
+      gap:8px;
+      margin-bottom:16px;
+    }
+    .control-label{width:auto;}
+    .search-input{width:100%;}
+    .year-range{min-width:0;}
+    .year-range-track{min-width:0;}
+  }
+
+  .era-header{
+    position:relative;
+    margin:56px 0 22px;
+    padding-left:96px;
+  }
+  .era-header:first-of-type{margin-top:18px;}
+  @media (max-width:640px){ .era-header{padding-left:56px;} }
+
+  .era-seal{
+    position:absolute;
+    left:52px;
+    top:2px;
+    transform:translateX(-50%);
+    width:26px; height:26px;
+    border-radius:50%;
+    background:var(--paper);
+    border:3px solid var(--era-color, var(--indigo));
+    z-index:2;
+  }
+  @media (max-width:640px){ .era-seal{left:26px; width:20px; height:20px; border-width:2px;} }
+
+  .era-range{
+    font-family:var(--font-ui);
+    font-size:11.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    font-weight:700;
+    color:var(--era-color, var(--indigo));
+    margin-bottom:4px;
+  }
+  .era-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(21px,3vw,27px);
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  .era-blurb{
+    font-family:var(--font-body);
+    font-style:italic;
+    font-size:14.5px;
+    color:var(--ink-soft);
+    max-width:56ch;
+    margin:0;
+  }
+
+  .entry{
+    position:relative;
+    padding-left:96px;
+    margin-bottom:14px;
+    transition:opacity 0.2s ease, max-height 0.2s ease;
+  }
+  @media (max-width:640px){ .entry{padding-left:56px;} }
+
+  .entry.branch{padding-left:132px;}
+  @media (max-width:640px){ .entry.branch{padding-left:80px;} }
+
+  .entry.hidden{display:none;}
+
+  .node-dot{
+    position:absolute;
+    left:52px;
+    top:22px;
+    transform:translate(-50%,-50%);
+    width:13px; height:13px;
+    border-radius:50%;
+    background:var(--era-color, var(--indigo));
+    border:2.5px solid var(--paper);
+    box-shadow:0 0 0 1.5px var(--era-color, var(--indigo));
+    z-index:2;
+  }
+  .entry.branch .node-dot{
+    left:96px;
+    width:9px; height:9px;
+  }
+  @media (max-width:640px){
+    .node-dot{left:26px;}
+    .entry.branch .node-dot{left:56px;}
+  }
+
+  .branch-connector{
+    position:absolute;
+    left:52px;
+    top:22px;
+    width:44px;
+    height:1px;
+    background:var(--rule);
+    z-index:1;
+  }
+  @media (max-width:640px){ .branch-connector{left:26px; width:30px;} }
+
+  .card{
+    background:var(--paper-card);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:16px 18px;
+    cursor:pointer;
+    transition:border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .entry.branch .card{
+    padding:11px 15px;
+    background:transparent;
+    border-style:dashed;
+  }
+  .card:hover{border-color:var(--ink-faint); box-shadow:0 2px 10px rgba(36,28,21,0.06);}
+  .card:focus-visible{outline:2px solid var(--copper-deep); outline-offset:2px;}
+
+  .card-top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .card-name-row{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .card-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:19px;
+    color:var(--ink);
+  }
+  .entry.branch .card-name{font-size:16.5px; font-weight:500;}
+  .card-role{
+    font-family:var(--font-ui);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    font-weight:500;
+  }
+  .card-years{
+    font-family:var(--font-ui);
+    font-size:12px;
+    font-weight:700;
+    color:var(--era-color,var(--indigo));
+    white-space:nowrap;
+  }
+  .card-loc{
+    font-family:var(--font-ui);
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:5px;
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+  .card-loc svg{width:11px; height:11px; opacity:0.65; flex-shrink:0;}
+
+  .card-detail{
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink-soft);
+    max-height:0;
+    overflow:hidden;
+    opacity:0;
+    transition:max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    margin-top:0;
+  }
+  .card.expanded .card-detail{
+    max-height:220px;
+    opacity:1;
+    margin-top:10px;
+  }
+  .card-detail-inner{padding-top:10px; border-top:1px solid var(--rule);}
+  .card-relation{
+    display:inline-block;
+    margin-top:9px;
+    font-family:var(--font-ui);
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--brick);
+  }
+
+  .expand-hint{
+    font-family:var(--font-ui);
+    font-size:10.5px;
+    color:var(--ink-faint);
+    opacity:0.6;
+  }
+
+  .empty-state{
+    padding-left:96px;
+    font-family:var(--font-ui);
+    font-size:14px;
+    color:var(--ink-faint);
+    font-style:italic;
+    padding-top:20px;
+  }
+  @media (max-width:640px){ .empty-state{padding-left:56px;} }
+
+  footer{
+    max-width:920px;
+    margin:0 auto;
+    padding:0 28px 80px;
+    font-family:var(--font-ui);
+    font-size:12px;
+    color:var(--ink-faint);
+    border-top:1px solid var(--rule);
+    padding-top:20px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">A companion timeline</div>
+  <h1 class="title">El Hilo del <em>Poder</em></h1>
+  <p class="subtitle">Enrique Krauze's <em>Mexico: Biography of Power</em>, 1810–1996</p>
+  <p class="intro">Krauze tells Mexican history as a chain of hands gripping the same office — each man shaped by the one before him, some rising as heirs, others as rivals who broke off from the main line. <strong>Click any name</strong> to read what changed hands, and use the filters below to follow one region or one era at a time.</p>
+</header>
+
+<div class="controls">
+  <div class="control-row">
+    <span class="control-label">Era</span>
+    <div class="chips" id="era-chips"></div>
+  </div>
+  <div class="control-row">
+    <span class="control-label">Place</span>
+    <div class="chips" id="loc-chips"></div>
+  </div>
+  <div class="control-row">
+    <span class="control-label">Name</span>
+    <input type="text" class="search-input" id="search-input" placeholder="Search a name or role…">
+  </div>
+  <div class="control-row">
+    <span class="control-label">Years</span>
+    <div class="year-range">
+      <div class="year-range-track" id="year-range-track">
+        <div class="year-range-rail"></div>
+        <div class="year-range-fill" id="year-range-fill"></div>
+        <input type="range" id="year-from" min="1810" max="2000" value="1810" step="1">
+        <input type="range" id="year-to" min="1810" max="2000" value="2000" step="1">
+      </div>
+      <span class="year-range-labels" id="year-range-labels">1810–2000</span>
+    </div>
+  </div>
+  <div class="control-row" style="margin-bottom:0;">
+    <button class="reset-btn" id="reset-btn">Reset filters</button>
+    <span class="result-count" id="result-count"></span>
+  </div>
+</div>
+
+<div class="timeline-wrap">
+  <div class="spine"></div>
+  <div id="timeline-body"></div>
+  <div class="empty-state" id="empty-state" style="display:none;">No one here — try widening the filters.</div>
+</div>
+
+<footer>
+  Built as a reading companion, not a substitute — dates are approximate to the year and simplified from Krauze's fuller account. Branch entries mark rivals, insurgents, or contested claims to power rather than the main line of office.
+</footer>
+
+<script>
+const ERAS = [
+  {key:'independence', name:'Independence', range:'1810 – 1821', color:'#A13D2C',
+    blurb:'A parish priest\u2019s revolt against the Crown becomes an eleven-year war, ending not in a republic but a short-lived empire.'},
+  {key:'caudillos', name:'The Age of Caudillos', range:'1821 – 1855', color:'#B98B2E',
+    blurb:'No institution outlives its strongman. One general, in and out of the presidency eleven times, personifies the chaos.'},
+  {key:'reforma', name:'La Reforma', range:'1855 – 1876', color:'#56715F',
+    blurb:'Liberal reformers strip the Church of its power and land — then must defend the republic itself against a French-imposed emperor.'},
+  {key:'porfiriato', name:'The Porfiriato', range:'1876 – 1911', color:'#3F4E63',
+    blurb:'Order and Progress: three decades of railways, foreign investment, and re-election, resting on one man\u2019s refusal to leave.'},
+  {key:'revolution', name:'The Revolution', range:'1910 – 1920', color:'#8C2F39',
+    blurb:'The single line of power shatters into several — a democrat, an agrarian rebel, a cavalry general, and a constitutionalist, each with a rival claim.'},
+  {key:'reconstruction', name:'Reconstruction & Maximato', range:'1920 – 1934', color:'#8A6A2E',
+    blurb:'The generals who won the war build the machine that will outlast them — a single party, and a Jefe Máximo who rules from behind the chair.'},
+  {key:'cardenismo', name:'Cardenismo', range:'1934 – 1940', color:'#3F6650',
+    blurb:'A president exiles his own patron, redistributes the land, and nationalizes the oil — the Revolution, briefly, made real.'},
+  {key:'milagro', name:'The Institutional Peace', range:'1940 – 1970', color:'#445673',
+    blurb:'Six presidents in six-year terms, one party, and a "Mexican Miracle" of growth — stability purchased with a closed political system.'},
+  {key:'crisis', name:'Crisis & Transition', range:'1970 – 1996', color:'#8B4A2B',
+    blurb:'Oil booms and busts, a massacre answered decades later, a peso collapse, and the first cracks in seventy years of single-party rule.'},
+];
+
+const ENTRIES = [
+  {name:'Miguel Hidalgo', years:'1810–1811', role:'Insurgent priest', loc:'Dolores, Guanajuato', era:'independence', branch:'main',
+    detail:'On the night of September 16, 1810, the parish priest of Dolores rang the church bell and called his parishioners to revolt — the Grito de Dolores. His improvised army swept toward Mexico City before being captured and executed within the year.'},
+  {name:'José María Morelos', years:'1811–1815', role:'Insurgent commander', loc:'Michoacán / Oaxaca', era:'independence', branch:'main',
+    detail:'Hidalgo\u2019s successor turned a mob into a disciplined force, convened the Congress of Chilpancingo, and issued a declaration of independence — before he too was captured and shot.',
+    relation:'Continues Hidalgo\u2019s revolt'},
+  {name:'Agustín de Iturbide', years:'1821–1823', role:'Emperor of Mexico', loc:'Mexico City / Veracruz', era:'independence', branch:'main',
+    detail:'A royalist officer who switched sides, Iturbide brokered independence through the Plan de Iguala, then crowned himself Emperor Agustín I. He lasted ten months before abdicating and, on a later return, was executed.',
+    relation:'Ends the war insurgents began'},
+
+  {name:'Antonio López de Santa Anna', years:'1833–1855', role:'President, eleven times over', loc:'Veracruz (Manga de Clavo)', era:'caudillos', branch:'main',
+    detail:'"El Presidente" occupied the office on and off for over two decades, presiding over the loss of Texas and half the national territory to the United States. His final ouster in 1855 opens the door to the Liberal reformers.'},
+
+  {name:'Benito Juárez', years:'1858–1872', role:'President; leader of the Reform', loc:'Oaxaca', era:'reforma', branch:'main',
+    detail:'A Zapotec lawyer from Oaxaca, Juárez led the Liberal government through civil war against the Conservatives, then held a government-in-exile through the French occupation before restoring the republic in 1867.',
+    relation:'Rises after Santa Anna\u2019s fall'},
+  {name:'Maximilian I', years:'1864–1867', role:'Emperor, installed by France', loc:'Mexico City', era:'reforma', branch:'right',
+    detail:'A Habsburg archduke placed on a Mexican throne by Napoleon III and Conservative exiles, Maximilian ruled a contested empire propped up by French troops. Abandoned when the troops withdrew, he was captured and executed at Querétaro.',
+    relation:'Rival claim against Juárez'},
+
+  {name:'Porfirio Díaz', years:'1876–1911', role:'President ("Order and Progress")', loc:'Oaxaca → Mexico City', era:'porfiriato', branch:'main',
+    detail:'A liberal general who fought beside Juárez turned into the very re-electionist strongman the Reform had opposed. Thirty-five years of relative peace and rapid modernization came at the cost of land dispossession and political closure.',
+    relation:'A Juarista who becomes Juárez\u2019s opposite'},
+
+  {name:'Francisco I. Madero', years:'1910–1913', role:'Revolutionary; President', loc:'Coahuila', era:'revolution', branch:'main',
+    detail:'A wealthy landowner turned democrat, Madero\u2019s "Sufragio Efectivo, No Reelección" campaign and Plan de San Luis Potosí ignited the Revolution against Díaz. He won the presidency, then was overthrown and murdered within two years.',
+    relation:'Challenges Díaz\u2019s re-election'},
+  {name:'Emiliano Zapata', years:'1911–1919', role:'Agrarian revolutionary', loc:'Morelos', era:'revolution', branch:'left',
+    detail:'"Tierra y Libertad." Zapata\u2019s Plan de Ayala demanded land reform Madero would not deliver, and his peasant army fought on against every government that followed — Madero\u2019s, Huerta\u2019s, and Carranza\u2019s — until his ambush and killing in 1919.',
+    relation:'Breaks from Madero over land reform'},
+  {name:'Francisco "Pancho" Villa', years:'1910–1920', role:'Cavalry commander', loc:'Chihuahua / Durango', era:'revolution', branch:'left',
+    detail:'Commander of the División del Norte, Villa was the Revolution\u2019s most feared cavalry general — allied with Madero and Zapata, at war with Carranza and Obregón, and briefly at war with the United States after his 1916 raid on Columbus, New Mexico.',
+    relation:'Rival to Carranza'},
+  {name:'Victoriano Huerta', years:'1913–1914', role:'Usurper President', loc:'Mexico City', era:'revolution', branch:'right',
+    detail:'In the "Decena Trágica" of February 1913, Huerta engineered a coup against Madero, who was assassinated days later. His illegitimate government united Carranza, Villa, Zapata, and Obregón against him — briefly — before he fled into exile.',
+    relation:'Overthrows Madero'},
+  {name:'Venustiano Carranza', years:'1914–1920', role:'First Chief; President', loc:'Coahuila', era:'revolution', branch:'main',
+    detail:'Carranza\u2019s Plan de Guadalupe rallied the anti-Huerta coalition; once in power he broke with his former allies Villa and Zapata, promulgated the reformist Constitution of 1917, and was assassinated fleeing his own successors in 1920.',
+    relation:'Leads the coalition against Huerta'},
+
+  {name:'Álvaro Obregón', years:'1920–1924', role:'President', loc:'Sonora', era:'reconstruction', branch:'main',
+    detail:'The general whose victories broke Villa\u2019s army turned against his own chief, Carranza, in the 1920 Agua Prieta rebellion. As president he began the land reform the Revolution had promised. Elected to a second term in 1928, he was assassinated before taking office.',
+    relation:'Turns on Carranza'},
+  {name:'Plutarco Elías Calles', years:'1924–1934', role:'President, then "Jefe Máximo"', loc:'Sonora', era:'reconstruction', branch:'main',
+    detail:'Calles founded the party that would rule Mexico for seven decades (forerunner of the PRI), fought the Church in the Cristero War, and after his own term continued to rule from behind the scenes through three successive presidents — the "Maximato."',
+    relation:'Obregón\u2019s successor and fellow Sonoran'},
+
+  {name:'Lázaro Cárdenas', years:'1934–1940', role:'President', loc:'Michoacán', era:'cardenismo', branch:'main',
+    detail:'Cárdenas broke the Maximato by exiling his own patron Calles, redistributed more land than all his predecessors combined, and nationalized the foreign-owned oil industry in 1938 — the Revolution\u2019s most concrete legacy.',
+    relation:'Exiles his patron, Calles'},
+
+  {name:'Manuel Ávila Camacho', years:'1940–1946', role:'President', loc:'Puebla', era:'milagro', branch:'main',
+    detail:'A moderating, wartime president who steered Mexico into alignment with the Allies and toward industrialization, easing the state away from Cardenista radicalism.'},
+  {name:'Miguel Alemán Valdés', years:'1946–1952', role:'President', loc:'Veracruz', era:'milagro', branch:'main',
+    detail:'The first civilian president since the Revolution, Alemán pushed industrial growth and infrastructure — the start of the "Mexican Miracle" — alongside rising cronyism and corruption.'},
+  {name:'Adolfo Ruiz Cortines', years:'1952–1958', role:'President', loc:'Veracruz', era:'milagro', branch:'main',
+    detail:'A cautious administrator who extended the vote to women in 1953 and worked to curb the excesses of the Alemán years.'},
+  {name:'Adolfo López Mateos', years:'1958–1964', role:'President', loc:'México State', era:'milagro', branch:'main',
+    detail:'Nationalized the electrical industry and pursued an independent, nonaligned foreign policy even as the Cold War pressed on Latin America.'},
+  {name:'Gustavo Díaz Ordaz', years:'1964–1970', role:'President', loc:'Puebla', era:'milagro', branch:'main',
+    detail:'Ten days before the 1968 Olympics opened in Mexico City, security forces fired on student demonstrators at Tlatelolco — a massacre that shattered the myth of the "Institutional Peace."',
+    relation:'Presides over Tlatelolco, 1968'},
+
+  {name:'Luis Echeverría', years:'1970–1976', role:'President', loc:'Guanajuato', era:'crisis', branch:'main',
+    detail:'Sought to distance himself from Tlatelolco with populist reform and spending, even as another student massacre — the 1971 "Halconazo" — occurred under his watch. Deficit spending set up the economic turmoil to come.'},
+  {name:'José López Portillo', years:'1976–1982', role:'President', loc:'Mexico City', era:'crisis', branch:'main',
+    detail:'Promised to "administer the abundance" of a new oil boom, then presided over its collapse — capping his term by nationalizing the banks amid a debt crisis.'},
+  {name:'Miguel de la Madrid', years:'1982–1988', role:'President', loc:'Colima', era:'crisis', branch:'main',
+    detail:'Inherited the debt crisis and answered with austerity and early market liberalization, while the 1985 Mexico City earthquake exposed the limits of state capacity.'},
+  {name:'Carlos Salinas de Gortari', years:'1988–1994', role:'President', loc:'Mexico City', era:'crisis', branch:'main',
+    detail:'Took office after a bitterly contested 1988 election, then pushed privatization and the North American Free Trade Agreement — signed as an armed uprising broke out in Chiapas on the day NAFTA took effect.'},
+  {name:'Luis Donaldo Colosio', years:'1994', role:'Assassinated PRI candidate', loc:'Tijuana, Baja California', era:'crisis', branch:'left',
+    detail:'The PRI\u2019s presidential candidate, seen as a reformist voice within the party, was shot at a campaign rally in Tijuana in March 1994 — a shock that still shadows the party\u2019s final years of unbroken rule.',
+    relation:'Salinas\u2019s chosen successor, killed before the vote'},
+  {name:'Ernesto Zedillo', years:'1994–2000', role:'President', loc:'Mexico City', era:'crisis', branch:'main',
+    detail:'Took office days before the peso collapsed in the "December Mistake," then, unlike his predecessors, allowed the political system itself to open — steps that would end seventy-one years of single-party rule in 2000.',
+    relation:'Colosio\u2019s replacement on the ballot'},
+];
+
+// ---------- Parse numeric year bounds for each entry ----------
+ENTRIES.forEach(en => {
+  const nums = en.years.match(/\d{4}/g).map(Number);
+  en.yearStart = nums[0];
+  en.yearEnd = nums.length > 1 ? nums[nums.length - 1] : nums[0];
+});
+
+// ---------- Build filter option lists ----------
+const locSet = [...new Set(ENTRIES.map(e => e.loc))];
+
+const eraChipsEl = document.getElementById('era-chips');
+const locChipsEl = document.getElementById('loc-chips');
+const searchInput = document.getElementById('search-input');
+const yearFromEl = document.getElementById('year-from');
+const yearToEl = document.getElementById('year-to');
+const yearFillEl = document.getElementById('year-range-fill');
+const yearLabelsEl = document.getElementById('year-range-labels');
+
+const YEAR_MIN = 1810, YEAR_MAX = 2000;
+
+let activeEra = 'all';
+let activeLoc = 'all';
+let searchQuery = '';
+let yearFrom = YEAR_MIN;
+let yearTo = YEAR_MAX;
+const expanded = new Set();
+
+function makeChip(container, label, value, colorDot){
+  const chip = document.createElement('button');
+  chip.className = 'chip';
+  chip.type = 'button';
+  chip.dataset.value = value;
+  if(colorDot){
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = colorDot;
+    chip.appendChild(dot);
+  }
+  chip.appendChild(document.createTextNode(label));
+  container.appendChild(chip);
+  return chip;
+}
+
+const allEraChip = makeChip(eraChipsEl, 'All eras', 'all');
+allEraChip.classList.add('active');
+ERAS.forEach(era => makeChip(eraChipsEl, era.name, era.key, era.color));
+
+const allLocChip = makeChip(locChipsEl, 'All places', 'all');
+allLocChip.classList.add('active');
+locSet.forEach(loc => makeChip(locChipsEl, loc, loc));
+
+eraChipsEl.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  activeEra = chip.dataset.value;
+  [...eraChipsEl.children].forEach(c => c.classList.toggle('active', c === chip));
+  render();
+});
+
+locChipsEl.addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  activeLoc = chip.dataset.value;
+  [...locChipsEl.children].forEach(c => c.classList.toggle('active', c === chip));
+  render();
+});
+
+searchInput.addEventListener('input', e => {
+  searchQuery = e.target.value.trim().toLowerCase();
+  render();
+});
+
+function updateYearVisual(){
+  if(yearFrom > yearTo){ [yearFrom, yearTo] = [yearTo, yearFrom]; }
+  yearFromEl.value = yearFrom;
+  yearToEl.value = yearTo;
+  const pctFrom = (yearFrom - YEAR_MIN) / (YEAR_MAX - YEAR_MIN) * 100;
+  const pctTo = (yearTo - YEAR_MIN) / (YEAR_MAX - YEAR_MIN) * 100;
+  yearFillEl.style.left = pctFrom + '%';
+  yearFillEl.style.width = (pctTo - pctFrom) + '%';
+  yearLabelsEl.textContent = `${yearFrom}–${yearTo}`;
+}
+
+yearFromEl.addEventListener('input', e => {
+  yearFrom = Math.min(Number(e.target.value), yearTo);
+  yearFromEl.value = yearFrom;
+  updateYearVisual();
+  render();
+});
+yearToEl.addEventListener('input', e => {
+  yearTo = Math.max(Number(e.target.value), yearFrom);
+  yearToEl.value = yearTo;
+  updateYearVisual();
+  render();
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  activeEra = 'all';
+  activeLoc = 'all';
+  searchQuery = '';
+  yearFrom = YEAR_MIN;
+  yearTo = YEAR_MAX;
+  searchInput.value = '';
+  [...eraChipsEl.children].forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
+  [...locChipsEl.children].forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
+  updateYearVisual();
+  render();
+});
+
+updateYearVisual();
+
+const locIconSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>';
+
+function render(){
+  const body = document.getElementById('timeline-body');
+  body.innerHTML = '';
+  let visibleCount = 0;
+
+  ERAS.forEach(era => {
+    if(activeEra !== 'all' && activeEra !== era.key) return;
+
+    const entriesForEra = ENTRIES.filter(en => en.era === era.key &&
+      (activeLoc === 'all' || en.loc === activeLoc) &&
+      (searchQuery === '' || en.name.toLowerCase().includes(searchQuery) || en.role.toLowerCase().includes(searchQuery)) &&
+      (en.yearEnd >= yearFrom && en.yearStart <= yearTo));
+
+    if(entriesForEra.length === 0) return;
+
+    const header = document.createElement('div');
+    header.className = 'era-header';
+    header.style.setProperty('--era-color', era.color);
+    header.innerHTML = `
+      <div class="era-seal"></div>
+      <div class="era-range">${era.range}</div>
+      <h2 class="era-name">${era.name}</h2>
+      <p class="era-blurb">${era.blurb}</p>
+    `;
+    body.appendChild(header);
+
+    entriesForEra.forEach(en => {
+      visibleCount++;
+      const isBranch = en.branch !== 'main';
+      const entryEl = document.createElement('div');
+      entryEl.className = 'entry' + (isBranch ? ' branch' : '');
+      entryEl.style.setProperty('--era-color', era.color);
+
+      const entryId = en.name;
+      const isExpanded = expanded.has(entryId);
+
+      entryEl.innerHTML = `
+        ${isBranch ? '<div class="branch-connector"></div>' : ''}
+        <div class="node-dot"></div>
+        <div class="card${isExpanded ? ' expanded' : ''}" tabindex="0" role="button" aria-expanded="${isExpanded}">
+          <div class="card-top">
+            <div class="card-name-row">
+              <span class="card-name">${en.name}</span>
+              <span class="card-role">${en.role}</span>
+            </div>
+            <span class="card-years">${en.years}</span>
+          </div>
+          <div class="card-loc">${locIconSVG}${en.loc}</div>
+          <div class="card-detail">
+            <div class="card-detail-inner">
+              ${en.detail}
+              ${en.relation ? `<span class="card-relation">↳ ${en.relation}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const cardEl = entryEl.querySelector('.card');
+      const toggle = () => {
+        const nowExpanded = cardEl.classList.toggle('expanded');
+        cardEl.setAttribute('aria-expanded', nowExpanded);
+        if(nowExpanded) expanded.add(entryId); else expanded.delete(entryId);
+      };
+      cardEl.addEventListener('click', toggle);
+      cardEl.addEventListener('keydown', e => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+      });
+
+      body.appendChild(entryEl);
+    });
+  });
+
+  document.getElementById('empty-state').style.display = visibleCount === 0 ? 'block' : 'none';
+  const countEl = document.getElementById('result-count');
+  const noFilters = activeEra === 'all' && activeLoc === 'all' && searchQuery === '' && yearFrom === YEAR_MIN && yearTo === YEAR_MAX;
+  countEl.textContent = noFilters
+    ? `${ENTRIES.length} figures across ${ERAS.length} eras`
+    : `Showing ${visibleCount} of ${ENTRIES.length}`;
+}
+
+render();
+</script>
+</body>
+</html>
