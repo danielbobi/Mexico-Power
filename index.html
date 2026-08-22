@@ -1140,6 +1140,7 @@ viewToggleEl.addEventListener('click', e => {
   networkViewEl.style.display = currentView === 'network' ? '' : 'none';
   if(currentView === 'network'){
     if(!networkInitialized){ initNetwork(); networkInitialized = true; }
+    else { fitNetworkView(); }
     updateNetworkFilterState();
   }
 });
@@ -1158,15 +1159,35 @@ function currentlyVisibleNames(){
 }
 
 let netNodeSel, netLinkSel, netSimulation, netZoomBehavior;
-let netG;
+let netG, netSvg, netFrame;
 let netSelectedName = null;
 
+function measureNetworkSize(){
+  // Measure the actual rendered box, not a parsed CSS string — this stays
+  // correct across the mobile/desktop media-query breakpoint and rotation.
+  const w = netFrame.clientWidth || 320;
+  const h = netFrame.clientHeight || 520;
+  return {w, h};
+}
+
+function fitNetworkView(){
+  if(!netSvg) return;
+  const {w, h} = measureNetworkSize();
+  netSvg.attr('viewBox', `0 0 ${w} ${h}`);
+  if(netSimulation){
+    netSimulation.force('center', d3.forceCenter(w/2, h/2));
+    netSimulation.alpha(0.5).restart();
+  }
+  if(netZoomBehavior){
+    netSvg.call(netZoomBehavior.transform, d3.zoomIdentity);
+  }
+}
+
 function initNetwork(){
-  const svg = d3.select('#network-svg');
-  const frame = document.querySelector('.network-frame');
-  const width = frame.clientWidth;
-  const height = parseInt(getComputedStyle(document.getElementById('network-svg')).height, 10) || 640;
-  svg.attr('viewBox', `0 0 ${width} ${height}`);
+  netSvg = d3.select('#network-svg');
+  netFrame = document.querySelector('.network-frame');
+  const {w: width, h: height} = measureNetworkSize();
+  netSvg.attr('viewBox', `0 0 ${width} ${height}`);
 
   const eraColor = key => (ERAS.find(e => e.key === key) || {}).color || '#3F4E63';
 
@@ -1182,15 +1203,15 @@ function initNetwork(){
     .filter(r => nodeById.has(r.source) && nodeById.has(r.target))
     .map(r => ({source: r.source, target: r.target, type: r.type}));
 
-  netG = svg.append('g');
+  netG = netSvg.append('g');
 
   netZoomBehavior = d3.zoom()
     .scaleExtent([0.35, 3])
     .on('zoom', ev => netG.attr('transform', ev.transform));
-  svg.call(netZoomBehavior);
+  netSvg.call(netZoomBehavior);
 
   const rootStyles = getComputedStyle(document.documentElement);
-  const defs = svg.append('defs');
+  const defs = netSvg.append('defs');
   ['succession','overthrow','rivalry','mentorship'].forEach(type => {
     defs.append('marker')
       .attr('id', 'arrow-' + type)
@@ -1236,7 +1257,7 @@ function initNetwork(){
 
   netNodeSel = nodeG;
 
-  svg.on('click', () => selectNetworkNode(null));
+  netSvg.on('click', () => selectNetworkNode(null));
 
   netSimulation = d3.forceSimulation(nodes)
     .force('link', d3.forceLink(links).id(d => d.id).distance(90).strength(0.5))
@@ -1248,18 +1269,26 @@ function initNetwork(){
       netNodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
     });
 
-  document.getElementById('net-reset-zoom').addEventListener('click', () => {
-    svg.transition().duration(400).call(netZoomBehavior.transform, d3.zoomIdentity);
-  });
+  document.getElementById('net-reset-zoom').addEventListener('click', fitNetworkView);
 
   document.getElementById('net-detail-close').addEventListener('click', () => selectNetworkNode(null));
 
+  // Debounced resize/orientation handling — recomputes real dimensions
+  // each time rather than reusing values captured at init.
+  let resizeTimer = null;
   window.addEventListener('resize', () => {
     if(currentView !== 'network') return;
-    const w = frame.clientWidth;
-    svg.attr('viewBox', `0 0 ${w} ${height}`);
-    netSimulation.force('center', d3.forceCenter(w/2, height/2));
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitNetworkView, 150);
   });
+  window.addEventListener('orientationchange', () => {
+    if(currentView !== 'network') return;
+    setTimeout(fitNetworkView, 250);
+  });
+
+  // Let the simulation run briefly to settle, then auto-fit — this is
+  // what replaces needing to press "Reset view" by hand on first load.
+  setTimeout(fitNetworkView, 400);
 }
 
 function updateNetworkFilterState(){
