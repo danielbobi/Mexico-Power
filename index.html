@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <style>
   :root{
     --paper:#F1E8D6;
@@ -92,6 +93,31 @@
     margin:0;
   }
   .intro strong{color:var(--ink); font-weight:600;}
+
+  .view-toggle{
+    display:inline-flex;
+    margin-top:22px;
+    border:1px solid var(--rule);
+    border-radius:100px;
+    padding:3px;
+    background:var(--paper-card);
+  }
+  .view-toggle button{
+    font-family:var(--font-ui);
+    font-size:12.5px;
+    font-weight:600;
+    padding:8px 18px;
+    border-radius:100px;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .view-toggle button.active{
+    background:var(--ink);
+    color:var(--paper-card);
+  }
 
   /* ---------- Controls ---------- */
   .controls{
@@ -511,6 +537,184 @@
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
   }
+
+  /* ---------- Network view ---------- */
+  .network-wrap{
+    max-width:1080px;
+    margin:0 auto;
+    padding:20px 28px 100px;
+  }
+  .network-hint{
+    font-family:var(--font-ui);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    margin:0 0 14px;
+  }
+  .network-frame{
+    position:relative;
+    border:1px solid var(--rule);
+    border-radius:14px;
+    background:var(--paper-card);
+    overflow:hidden;
+  }
+  #network-svg{
+    width:100%;
+    height:640px;
+    display:block;
+    cursor:grab;
+  }
+  #network-svg:active{cursor:grabbing;}
+
+  .net-link{
+    stroke-opacity:0.55;
+    fill:none;
+    transition:stroke-opacity 0.2s ease;
+  }
+  .net-link.succession{stroke:var(--copper-deep); stroke-width:2;}
+  .net-link.rivalry{stroke:var(--brick); stroke-width:1.6; stroke-dasharray:5,4;}
+  .net-link.mentorship{stroke:var(--gold); stroke-width:1.6; stroke-dasharray:1,4; stroke-linecap:round;}
+  .net-link.overthrow{stroke:#7A1F1F; stroke-width:2.4;}
+
+  .net-node circle{
+    stroke:var(--paper-card);
+    stroke-width:2.5;
+    cursor:pointer;
+    transition:opacity 0.2s ease, stroke-width 0.15s ease;
+  }
+  .net-node.branch circle{stroke-dasharray:2,2;}
+  .net-node text{
+    font-family:var(--font-ui);
+    font-size:10.5px;
+    font-weight:600;
+    fill:var(--ink);
+    pointer-events:none;
+    paint-order:stroke;
+    stroke:var(--paper-card);
+    stroke-width:3px;
+    stroke-linejoin:round;
+  }
+  .net-node.dimmed circle{opacity:0.16;}
+  .net-node.dimmed text{opacity:0.22;}
+  .net-link.dimmed{stroke-opacity:0.08;}
+  .net-node.selected circle{stroke:var(--ink); stroke-width:3.5;}
+
+  .net-legend{
+    position:absolute;
+    left:14px; bottom:14px;
+    background:rgba(250,244,230,0.92);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:10px 14px;
+    font-family:var(--font-ui);
+    font-size:11px;
+    color:var(--ink-soft);
+    line-height:1.9;
+    backdrop-filter:blur(2px);
+  }
+  .net-legend .legend-row{display:flex; align-items:center; gap:8px;}
+  .net-legend .swatch{width:20px; height:0; border-top-width:2.4px; border-top-style:solid; flex-shrink:0;}
+  .net-legend .swatch.succession{border-color:var(--copper-deep);}
+  .net-legend .swatch.rivalry{border-color:var(--brick); border-top-style:dashed;}
+  .net-legend .swatch.mentorship{border-color:var(--gold); border-top-style:dotted; border-top-width:3px;}
+  .net-legend .swatch.overthrow{border-color:#7A1F1F; border-top-width:3px;}
+
+  .net-reset-zoom{
+    position:absolute;
+    right:14px; top:14px;
+    font-family:var(--font-ui);
+    font-size:11.5px;
+    font-weight:600;
+    padding:7px 13px;
+    border-radius:100px;
+    border:1px solid var(--rule);
+    background:var(--paper-card);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .net-reset-zoom:hover{border-color:var(--ink-faint); color:var(--ink);}
+
+  .net-detail{
+    margin-top:16px;
+    background:var(--paper-card);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:18px 20px;
+    display:none;
+  }
+  .net-detail.open{display:block;}
+  .net-detail-top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .net-detail-name{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:20px;
+  }
+  .net-detail-meta{
+    font-family:var(--font-ui);
+    font-size:11.5px;
+    color:var(--ink-faint);
+    margin-top:2px;
+  }
+  .net-detail-years{
+    font-family:var(--font-ui);
+    font-size:12px;
+    font-weight:700;
+  }
+  .net-detail-text{
+    font-family:var(--font-body);
+    font-size:14.5px;
+    color:var(--ink-soft);
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--rule);
+  }
+  .net-detail-connections{
+    margin-top:12px;
+    font-family:var(--font-ui);
+    font-size:12.5px;
+  }
+  .net-detail-connections .conn-label{
+    color:var(--ink-faint);
+    font-weight:600;
+    text-transform:uppercase;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    margin-right:6px;
+  }
+  .net-detail-connections a.conn-pill{
+    display:inline-block;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:100px;
+    padding:3px 10px;
+    margin:3px 4px 3px 0;
+    font-weight:500;
+    color:var(--ink-soft);
+    cursor:pointer;
+    text-decoration:none;
+  }
+  .net-detail-connections a.conn-pill:hover{border-color:var(--ink-faint); color:var(--ink);}
+  .net-detail-close{
+    font-family:var(--font-ui);
+    font-size:11px;
+    color:var(--ink-faint);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    padding:0;
+  }
+
+  @media (max-width:640px){
+    .network-wrap{padding:16px 14px 80px;}
+    #network-svg{height:520px;}
+    .net-legend{font-size:10px; padding:8px 10px; line-height:1.7;}
+  }
 </style>
 </head>
 <body>
@@ -520,6 +724,10 @@
   <h1 class="title">El Hilo del <em>Poder</em></h1>
   <p class="subtitle">Enrique Krauze's <em>Mexico: Biography of Power</em>, 1810–1996</p>
   <p class="intro">Krauze tells Mexican history as a chain of hands gripping the same office — each man shaped by the one before him, some rising as heirs, others as rivals who broke off from the main line. <strong>Click any name</strong> to read what changed hands, and use the filters below to follow one region or one era at a time.</p>
+  <div class="view-toggle" id="view-toggle">
+    <button type="button" data-view="timeline" class="active">Timeline</button>
+    <button type="button" data-view="network">Influence Map</button>
+  </div>
 </header>
 
 <div class="controls">
@@ -553,10 +761,36 @@
   </div>
 </div>
 
-<div class="timeline-wrap">
+<div class="timeline-wrap" id="timeline-view">
   <div class="spine"></div>
   <div id="timeline-body"></div>
   <div class="empty-state" id="empty-state" style="display:none;">No one here — try widening the filters.</div>
+</div>
+
+<div class="network-wrap" id="network-view" style="display:none;">
+  <p class="network-hint">Drag any figure to rearrange the map. Click a name to see who shaped them and who they shaped in turn — filters above still apply and dim everyone else. Scroll or pinch to zoom.</p>
+  <div class="network-frame">
+    <button class="net-reset-zoom" id="net-reset-zoom">Reset view</button>
+    <svg id="network-svg"></svg>
+    <div class="net-legend">
+      <div class="legend-row"><span class="swatch succession"></span> Succession — hands to an heir</div>
+      <div class="legend-row"><span class="swatch overthrow"></span> Overthrow — seized by force</div>
+      <div class="legend-row"><span class="swatch rivalry"></span> Rivalry — contested claim</div>
+      <div class="legend-row"><span class="swatch mentorship"></span> Mentorship — patron &amp; protégé</div>
+    </div>
+  </div>
+  <div class="net-detail" id="net-detail">
+    <div class="net-detail-top">
+      <div>
+        <div class="net-detail-name" id="net-detail-name"></div>
+        <div class="net-detail-meta" id="net-detail-meta"></div>
+      </div>
+      <div class="net-detail-years" id="net-detail-years"></div>
+    </div>
+    <div class="net-detail-text" id="net-detail-text"></div>
+    <div class="net-detail-connections" id="net-detail-connections"></div>
+    <button class="net-detail-close" id="net-detail-close" style="margin-top:12px;">Close</button>
+  </div>
 </div>
 
 <footer>
@@ -662,6 +896,37 @@ const ENTRIES = [
   {name:'Ernesto Zedillo', years:'1994–2000', role:'President', loc:'Mexico City', era:'crisis', branch:'main',
     detail:'Took office days before the peso collapsed in the "December Mistake," then, unlike his predecessors, allowed the political system itself to open — steps that would end seventy-one years of single-party rule in 2000.',
     relation:'Colosio\u2019s replacement on the ballot'},
+];
+
+const RELATIONSHIPS = [
+  {source:'Miguel Hidalgo', target:'José María Morelos', type:'succession'},
+  {source:'José María Morelos', target:'Agustín de Iturbide', type:'succession'},
+  {source:'Agustín de Iturbide', target:'Antonio López de Santa Anna', type:'succession'},
+  {source:'Antonio López de Santa Anna', target:'Benito Juárez', type:'succession'},
+  {source:'Benito Juárez', target:'Maximilian I', type:'rivalry'},
+  {source:'Benito Juárez', target:'Porfirio Díaz', type:'mentorship'},
+  {source:'Porfirio Díaz', target:'Francisco I. Madero', type:'rivalry'},
+  {source:'Francisco I. Madero', target:'Emiliano Zapata', type:'rivalry'},
+  {source:'Victoriano Huerta', target:'Francisco I. Madero', type:'overthrow'},
+  {source:'Venustiano Carranza', target:'Victoriano Huerta', type:'rivalry'},
+  {source:'Venustiano Carranza', target:'Francisco "Pancho" Villa', type:'rivalry'},
+  {source:'Venustiano Carranza', target:'Emiliano Zapata', type:'rivalry'},
+  {source:'Álvaro Obregón', target:'Venustiano Carranza', type:'overthrow'},
+  {source:'Álvaro Obregón', target:'Plutarco Elías Calles', type:'succession'},
+  {source:'Plutarco Elías Calles', target:'Lázaro Cárdenas', type:'mentorship'},
+  {source:'Lázaro Cárdenas', target:'Plutarco Elías Calles', type:'overthrow'},
+  {source:'Lázaro Cárdenas', target:'Manuel Ávila Camacho', type:'succession'},
+  {source:'Manuel Ávila Camacho', target:'Miguel Alemán Valdés', type:'succession'},
+  {source:'Miguel Alemán Valdés', target:'Adolfo Ruiz Cortines', type:'succession'},
+  {source:'Adolfo Ruiz Cortines', target:'Adolfo López Mateos', type:'succession'},
+  {source:'Adolfo López Mateos', target:'Gustavo Díaz Ordaz', type:'succession'},
+  {source:'Gustavo Díaz Ordaz', target:'Luis Echeverría', type:'succession'},
+  {source:'Luis Echeverría', target:'José López Portillo', type:'succession'},
+  {source:'José López Portillo', target:'Miguel de la Madrid', type:'succession'},
+  {source:'Miguel de la Madrid', target:'Carlos Salinas de Gortari', type:'succession'},
+  {source:'Carlos Salinas de Gortari', target:'Luis Donaldo Colosio', type:'mentorship'},
+  {source:'Luis Donaldo Colosio', target:'Ernesto Zedillo', type:'succession'},
+  {source:'Carlos Salinas de Gortari', target:'Ernesto Zedillo', type:'succession'},
 ];
 
 // ---------- Parse numeric year bounds for each entry ----------
@@ -858,6 +1123,214 @@ function render(){
 }
 
 render();
+
+// ---------- View toggle ----------
+let currentView = 'timeline';
+const viewToggleEl = document.getElementById('view-toggle');
+const timelineViewEl = document.getElementById('timeline-view');
+const networkViewEl = document.getElementById('network-view');
+let networkInitialized = false;
+
+viewToggleEl.addEventListener('click', e => {
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  currentView = btn.dataset.view;
+  [...viewToggleEl.children].forEach(b => b.classList.toggle('active', b === btn));
+  timelineViewEl.style.display = currentView === 'timeline' ? '' : 'none';
+  networkViewEl.style.display = currentView === 'network' ? '' : 'none';
+  if(currentView === 'network'){
+    if(!networkInitialized){ initNetwork(); networkInitialized = true; }
+    updateNetworkFilterState();
+  }
+});
+
+// ---------- Network / influence map ----------
+function currentlyVisibleNames(){
+  const visible = new Set();
+  ENTRIES.forEach(en => {
+    const matches = (activeEra === 'all' || en.era === activeEra) &&
+      (activeLoc === 'all' || en.loc === activeLoc) &&
+      (searchQuery === '' || en.name.toLowerCase().includes(searchQuery) || en.role.toLowerCase().includes(searchQuery)) &&
+      (en.yearEnd >= yearFrom && en.yearStart <= yearTo);
+    if(matches) visible.add(en.name);
+  });
+  return visible;
+}
+
+let netNodeSel, netLinkSel, netSimulation, netZoomBehavior;
+let netG;
+let netSelectedName = null;
+
+function initNetwork(){
+  const svg = d3.select('#network-svg');
+  const frame = document.querySelector('.network-frame');
+  const width = frame.clientWidth;
+  const height = parseInt(getComputedStyle(document.getElementById('network-svg')).height, 10) || 640;
+  svg.attr('viewBox', `0 0 ${width} ${height}`);
+
+  const eraColor = key => (ERAS.find(e => e.key === key) || {}).color || '#3F4E63';
+
+  const nodes = ENTRIES.map(en => ({
+    id: en.name,
+    era: en.era,
+    branch: en.branch,
+    entry: en,
+    radius: en.branch === 'main' ? 15 : 10,
+  }));
+  const nodeById = new Map(nodes.map(n => [n.id, n]));
+  const links = RELATIONSHIPS
+    .filter(r => nodeById.has(r.source) && nodeById.has(r.target))
+    .map(r => ({source: r.source, target: r.target, type: r.type}));
+
+  netG = svg.append('g');
+
+  netZoomBehavior = d3.zoom()
+    .scaleExtent([0.35, 3])
+    .on('zoom', ev => netG.attr('transform', ev.transform));
+  svg.call(netZoomBehavior);
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const defs = svg.append('defs');
+  ['succession','overthrow','rivalry','mentorship'].forEach(type => {
+    defs.append('marker')
+      .attr('id', 'arrow-' + type)
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 20)
+      .attr('refY', 0)
+      .attr('markerWidth', 7)
+      .attr('markerHeight', 7)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', type === 'succession' ? rootStyles.getPropertyValue('--copper-deep').trim()
+        : type === 'overthrow' ? '#7A1F1F'
+        : type === 'rivalry' ? rootStyles.getPropertyValue('--brick').trim()
+        : rootStyles.getPropertyValue('--gold').trim());
+  });
+
+  netLinkSel = netG.append('g').selectAll('path')
+    .data(links)
+    .join('path')
+    .attr('class', d => 'net-link ' + d.type)
+    .attr('marker-end', d => `url(#arrow-${d.type})`);
+
+  const nodeG = netG.append('g').selectAll('g')
+    .data(nodes)
+    .join('g')
+    .attr('class', d => 'net-node' + (d.branch !== 'main' ? ' branch' : ''))
+    .call(d3.drag()
+      .on('start', (ev, d) => { if(!ev.active) netSimulation.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
+      .on('drag', (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+      .on('end', (ev, d) => { if(!ev.active) netSimulation.alphaTarget(0); d.fx = null; d.fy = null; })
+    )
+    .on('click', (ev, d) => { ev.stopPropagation(); selectNetworkNode(d.id); });
+
+  nodeG.append('circle')
+    .attr('r', d => d.radius)
+    .attr('fill', d => eraColor(d.era));
+
+  nodeG.append('text')
+    .attr('x', d => d.radius + 5)
+    .attr('y', 4)
+    .text(d => d.id.split(' ').slice(-1)[0]);
+
+  netNodeSel = nodeG;
+
+  svg.on('click', () => selectNetworkNode(null));
+
+  netSimulation = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(90).strength(0.5))
+    .force('charge', d3.forceManyBody().strength(-260))
+    .force('center', d3.forceCenter(width/2, height/2))
+    .force('collide', d3.forceCollide().radius(d => d.radius + 26))
+    .on('tick', () => {
+      netLinkSel.attr('d', d => `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`);
+      netNodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
+    });
+
+  document.getElementById('net-reset-zoom').addEventListener('click', () => {
+    svg.transition().duration(400).call(netZoomBehavior.transform, d3.zoomIdentity);
+  });
+
+  document.getElementById('net-detail-close').addEventListener('click', () => selectNetworkNode(null));
+
+  window.addEventListener('resize', () => {
+    if(currentView !== 'network') return;
+    const w = frame.clientWidth;
+    svg.attr('viewBox', `0 0 ${w} ${height}`);
+    netSimulation.force('center', d3.forceCenter(w/2, height/2));
+  });
+}
+
+function updateNetworkFilterState(){
+  if(!netNodeSel) return;
+  if(netSelectedName) return; // a manual selection is in charge of dimming right now
+  const visible = currentlyVisibleNames();
+  const allVisible = visible.size === ENTRIES.length;
+  netNodeSel.classed('dimmed', d => !allVisible && !visible.has(d.id));
+  netLinkSel.classed('dimmed', d => !allVisible && !(visible.has(d.source.id || d.source) && visible.has(d.target.id || d.target)));
+}
+
+function selectNetworkNode(name){
+  netSelectedName = name;
+  const detailEl = document.getElementById('net-detail');
+  netNodeSel.classed('selected', d => d.id === name);
+
+  if(!name){
+    detailEl.classList.remove('open');
+    updateNetworkFilterState();
+    return;
+  }
+
+  const entry = ENTRIES.find(en => en.name === name);
+  const era = ERAS.find(e => e.key === entry.era);
+  document.getElementById('net-detail-name').textContent = entry.name;
+  document.getElementById('net-detail-meta').textContent = `${entry.role} · ${entry.loc}`;
+  document.getElementById('net-detail-years').textContent = entry.years;
+  document.getElementById('net-detail-years').style.color = era ? era.color : '';
+  document.getElementById('net-detail-text').textContent = entry.detail;
+
+  const incoming = RELATIONSHIPS.filter(r => r.target === name);
+  const outgoing = RELATIONSHIPS.filter(r => r.source === name);
+  const typeLabelOut = {succession:'succeeded by', overthrow:'overthrown by', rivalry:'rival of', mentorship:'mentored'};
+  const typeLabelIn = {succession:'succeeds', overthrow:'overthrows', rivalry:'rival of', mentorship:'mentored by'};
+
+  let connHTML = '';
+  if(outgoing.length){
+    connHTML += `<div><span class="conn-label">Leads to</span>` +
+      outgoing.map(r => `<a class="conn-pill" data-name="${r.target}">${r.target} — ${typeLabelOut[r.type]}</a>`).join('') +
+      `</div>`;
+  }
+  if(incoming.length){
+    connHTML += `<div style="margin-top:6px;"><span class="conn-label">Shaped by</span>` +
+      incoming.map(r => `<a class="conn-pill" data-name="${r.source}">${r.source} — ${typeLabelIn[r.type]}</a>`).join('') +
+      `</div>`;
+  }
+  document.getElementById('net-detail-connections').innerHTML = connHTML;
+  document.querySelectorAll('#net-detail-connections .conn-pill').forEach(pill => {
+    pill.addEventListener('click', () => selectNetworkNode(pill.dataset.name));
+  });
+
+  detailEl.classList.add('open');
+
+  const connected = new Set([name]);
+  RELATIONSHIPS.forEach(r => {
+    if(r.source === name) connected.add(r.target);
+    if(r.target === name) connected.add(r.source);
+  });
+  netNodeSel.classed('dimmed', d => !connected.has(d.id));
+  netLinkSel.classed('dimmed', d => {
+    const s = d.source.id || d.source, t = d.target.id || d.target;
+    return !(s === name || t === name);
+  });
+}
+
+// Re-check network dimming whenever filters change, if that view is active
+const _origRender = render;
+render = function(){
+  _origRender();
+  if(currentView === 'network') updateNetworkFilterState();
+};
 </script>
 </body>
 </html>
