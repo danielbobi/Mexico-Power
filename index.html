@@ -49,7 +49,7 @@
   header.hero{
     max-width:920px;
     margin:0 auto;
-    padding:72px 28px 40px;
+    padding:48px 28px 26px;
     text-align:left;
     border-bottom:1px solid var(--rule);
   }
@@ -83,7 +83,7 @@
     font-weight:500;
     font-size:clamp(17px,2.4vw,21px);
     color:var(--ink-soft);
-    margin:0 0 22px;
+    margin:12px 0 14px;
   }
   .intro{
     font-family:var(--font-body);
@@ -94,9 +94,40 @@
   }
   .intro strong{color:var(--ink); font-weight:600;}
 
+  .about-details{
+    margin-top:10px;
+  }
+  .about-details summary{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font-ui);
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--copper-deep);
+    cursor:pointer;
+    list-style:none;
+    user-select:none;
+  }
+  .about-details summary::-webkit-details-marker{display:none;}
+  .about-details summary::before{
+    content:'';
+    width:7px; height:7px;
+    border-right:2px solid currentColor;
+    border-bottom:2px solid currentColor;
+    transform:rotate(-45deg);
+    transition:transform 0.2s ease;
+    flex-shrink:0;
+  }
+  .about-details[open] summary::before{
+    transform:rotate(45deg);
+    margin-top:-3px;
+  }
+  .about-details summary:hover{opacity:0.75;}
+
   .view-toggle{
     display:inline-flex;
-    margin-top:22px;
+    margin-top:18px;
     border:1px solid var(--rule);
     border-radius:100px;
     padding:3px;
@@ -319,7 +350,7 @@
   }
 
   @media (max-width:640px){
-    header.hero{padding:44px 20px 28px;}
+    header.hero{padding:32px 20px 20px;}
     .controls{padding:16px 0 12px;}
     .timeline-wrap{padding:20px 20px 100px;}
     footer{padding:0 20px 60px;}
@@ -597,6 +628,14 @@
     background:var(--paper-card);
     overflow:hidden;
   }
+  .network-frame.fullscreen{
+    position:fixed;
+    inset:0;
+    z-index:500;
+    border-radius:0;
+    border:none;
+  }
+  body.map-fullscreen{overflow:hidden;}
   #network-svg{
     width:100%;
     height:640px;
@@ -604,6 +643,7 @@
     cursor:grab;
   }
   #network-svg:active{cursor:grabbing;}
+  .network-frame.fullscreen #network-svg{height:100vh;}
 
   .net-link{
     stroke-opacity:0.55;
@@ -658,9 +698,14 @@
   .net-legend .swatch.mentorship{border-color:var(--gold); border-top-style:dotted; border-top-width:3px;}
   .net-legend .swatch.overthrow{border-color:#7A1F1F; border-top-width:3px;}
 
-  .net-reset-zoom{
+  .net-controls-top{
     position:absolute;
     right:14px; top:14px;
+    display:flex;
+    gap:8px;
+    z-index:2;
+  }
+  .net-controls-top button{
     font-family:var(--font-ui);
     font-size:11.5px;
     font-weight:600;
@@ -671,7 +716,10 @@
     color:var(--ink-soft);
     cursor:pointer;
   }
-  .net-reset-zoom:hover{border-color:var(--ink-faint); color:var(--ink);}
+  .net-controls-top button:hover{border-color:var(--ink-faint); color:var(--ink);}
+  .network-frame.fullscreen .net-controls-top{
+    right:18px; top:18px;
+  }
 
   .net-detail{
     margin-top:16px;
@@ -762,8 +810,11 @@
 <header class="hero">
   <div class="eyebrow">A companion timeline</div>
   <h1 class="title">El Hilo del <em>Poder</em></h1>
-  <p class="subtitle">Enrique Krauze's <em>Mexico: Biography of Power</em>, 1810–1996</p>
-  <p class="intro">Krauze tells Mexican history as a chain of hands gripping the same office — each man shaped by the one before him, some rising as heirs, others as rivals who broke off from the main line. <strong>Click any name</strong> to read what changed hands, and use the filters below to follow one region or one era at a time.</p>
+  <details class="about-details">
+    <summary>About this map</summary>
+    <p class="subtitle">Enrique Krauze's <em>Mexico: Biography of Power</em>, 1810–1996</p>
+    <p class="intro">Krauze tells Mexican history as a chain of hands gripping the same office — each man shaped by the one before him, some rising as heirs, others as rivals who broke off from the main line. <strong>Click any name</strong> to read what changed hands, and use the filters below to follow one region or one era at a time.</p>
+  </details>
   <div class="view-toggle" id="view-toggle">
     <button type="button" data-view="timeline" class="active">Timeline</button>
     <button type="button" data-view="network">Influence Map</button>
@@ -813,8 +864,11 @@
   <div class="view-pane" id="pane-network">
     <div class="network-wrap" id="network-view">
       <p class="network-hint">Drag any figure to rearrange the map. Click a name to see who shaped them and who they shaped in turn — filters above still apply and dim everyone else. Scroll or pinch to zoom.</p>
-      <div class="network-frame">
-        <button class="net-reset-zoom" id="net-reset-zoom">Reset view</button>
+      <div class="network-frame" id="network-frame">
+        <div class="net-controls-top">
+          <button id="net-expand-toggle" type="button">Expand ⤢</button>
+          <button id="net-reset-zoom" type="button">Reset view</button>
+        </div>
         <svg id="network-svg"></svg>
         <div class="net-legend">
           <div class="legend-row"><span class="swatch succession"></span> Succession — hands to an heir</div>
@@ -1307,7 +1361,7 @@ function zoomToFit(padding, animate){
 
 function initNetwork(){
   netSvg = d3.select('#network-svg');
-  netFrame = document.querySelector('.network-frame');
+  netFrame = document.getElementById('network-frame');
   const {w: width, h: height} = measureNetworkSize();
   netSvg.attr('viewBox', `0 0 ${width} ${height}`);
 
@@ -1396,6 +1450,26 @@ function initNetwork(){
   document.getElementById('net-reset-zoom').addEventListener('click', () => {
     fitNetworkView();
     zoomToFit(46, true);
+  });
+
+  const expandBtn = document.getElementById('net-expand-toggle');
+  const frameEl = document.getElementById('network-frame');
+  expandBtn.addEventListener('click', () => {
+    const goingFullscreen = !frameEl.classList.contains('fullscreen');
+    frameEl.classList.toggle('fullscreen', goingFullscreen);
+    document.body.classList.toggle('map-fullscreen', goingFullscreen);
+    expandBtn.textContent = goingFullscreen ? 'Collapse ✕' : 'Expand ⤢';
+    // Dimensions just changed drastically — re-measure and re-fit.
+    requestAnimationFrame(() => {
+      fitNetworkView();
+      zoomToFit(46, true);
+      syncSwiperHeight();
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && frameEl.classList.contains('fullscreen')){
+      expandBtn.click();
+    }
   });
 
   document.getElementById('net-detail-close').addEventListener('click', () => selectNetworkNode(null));
