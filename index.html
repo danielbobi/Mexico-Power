@@ -320,19 +320,36 @@
 
   @media (max-width:640px){
     header.hero{padding:44px 20px 28px;}
-    .controls{padding:18px 20px 14px;}
+    .controls{padding:16px 0 12px;}
     .timeline-wrap{padding:20px 20px 100px;}
     footer{padding:0 20px 60px;}
     .control-row{
       flex-direction:column;
       align-items:stretch;
-      gap:8px;
-      margin-bottom:16px;
+      gap:6px;
+      margin-bottom:10px;
     }
-    .control-label{width:auto;}
-    .search-input{width:100%;}
-    .year-range{min-width:0;}
+    .control-label{width:auto; padding-left:20px;}
+    .search-input{width:calc(100% - 40px); margin:0 20px;}
+    .year-range{min-width:0; padding:0 20px;}
     .year-range-track{min-width:0;}
+    .chips{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      scroll-padding-left:20px;
+      padding:2px 20px 8px;
+      margin:0 -0px;
+      mask-image:linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+      -webkit-mask-image:linear-gradient(to right, transparent 0, black 20px, black calc(100% - 20px), transparent 100%);
+    }
+    .chips::-webkit-scrollbar{height:0; display:none;}
+    .chip{flex-shrink:0;}
+    .control-row:last-of-type{padding:0 20px;}
+  }
+
+  @media (max-width:640px){
+    .controls{box-shadow:none;}
   }
 
   .era-header{
@@ -536,6 +553,14 @@
 
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
+  }
+
+  @keyframes paneEnterFromRight{ from{opacity:0; transform:translateX(18px);} to{opacity:1; transform:translateX(0);} }
+  @keyframes paneEnterFromLeft{ from{opacity:0; transform:translateX(-18px);} to{opacity:1; transform:translateX(0);} }
+  .pane-enter{ animation:paneEnterFromRight 0.28s ease; }
+  #timeline-view.pane-enter{ animation-name:paneEnterFromLeft; }
+  @media (prefers-reduced-motion: reduce){
+    .pane-enter{animation:none !important;}
   }
 
   /* ---------- Network view ---------- */
@@ -1131,19 +1156,74 @@ const timelineViewEl = document.getElementById('timeline-view');
 const networkViewEl = document.getElementById('network-view');
 let networkInitialized = false;
 
+function switchView(view){
+  if(view === currentView) return;
+  currentView = view;
+  [...viewToggleEl.children].forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  timelineViewEl.style.display = view === 'timeline' ? '' : 'none';
+  networkViewEl.style.display = view === 'network' ? '' : 'none';
+  const panEl = view === 'network' ? networkViewEl : timelineViewEl;
+  panEl.classList.remove('pane-enter');
+  void panEl.offsetWidth; // restart the animation
+  panEl.classList.add('pane-enter');
+  if(view === 'network'){
+    if(!networkInitialized){ initNetwork(); networkInitialized = true; }
+    else { fitNetworkView(); zoomToFit(46, true); }
+    updateNetworkFilterState();
+  }
+}
+
 viewToggleEl.addEventListener('click', e => {
   const btn = e.target.closest('button');
   if(!btn) return;
-  currentView = btn.dataset.view;
-  [...viewToggleEl.children].forEach(b => b.classList.toggle('active', b === btn));
-  timelineViewEl.style.display = currentView === 'timeline' ? '' : 'none';
-  networkViewEl.style.display = currentView === 'network' ? '' : 'none';
-  if(currentView === 'network'){
-    if(!networkInitialized){ initNetwork(); networkInitialized = true; }
-    else { fitNetworkView(); }
-    updateNetworkFilterState();
-  }
+  switchView(btn.dataset.view);
 });
+
+// ---------- Sideways gestures: swipe (touch) and trackpad scroll ----------
+// Swiping/scrolling sideways anywhere switches Timeline ↔ Influence Map.
+// Two exceptions, so this never fights the graph's own pan/zoom/drag:
+//  - a touch or scroll that starts on the network canvas itself is left
+//    alone, UNLESS it starts within an edge strip (an iOS-style "back" swipe)
+const EDGE_ZONE = 28;
+let gestureStartX = 0, gestureStartY = 0, gestureActive = false;
+
+function startsOnNetworkCanvas(target){
+  return !!(target.closest && target.closest('#network-svg'));
+}
+
+document.addEventListener('touchstart', e => {
+  if(e.touches.length !== 1) return;
+  const t = e.touches[0];
+  gestureStartX = t.clientX;
+  gestureStartY = t.clientY;
+  const onCanvas = startsOnNetworkCanvas(e.target);
+  const inEdge = t.clientX <= EDGE_ZONE;
+  gestureActive = !(onCanvas && !inEdge);
+}, {passive:true});
+
+document.addEventListener('touchend', e => {
+  if(!gestureActive) return;
+  gestureActive = false;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - gestureStartX;
+  const dy = t.clientY - gestureStartY;
+  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+  if(dx < 0 && currentView === 'timeline') switchView('network');
+  else if(dx > 0 && currentView === 'network') switchView('timeline');
+}, {passive:true});
+
+let wheelCooldown = false;
+document.addEventListener('wheel', e => {
+  if(wheelCooldown) return;
+  if(Math.abs(e.deltaX) < 34 || Math.abs(e.deltaX) < Math.abs(e.deltaY) * 1.2) return;
+  const onCanvas = startsOnNetworkCanvas(e.target);
+  if(onCanvas) return; // let the graph's own zoom/pan handle trackpad gestures there
+  if(e.deltaX > 0 && currentView === 'timeline') switchView('network');
+  else if(e.deltaX < 0 && currentView === 'network') switchView('timeline');
+  else return;
+  wheelCooldown = true;
+  setTimeout(() => { wheelCooldown = false; }, 650);
+}, {passive:true});
 
 // ---------- Network / influence map ----------
 function currentlyVisibleNames(){
@@ -1178,9 +1258,24 @@ function fitNetworkView(){
     netSimulation.force('center', d3.forceCenter(w/2, h/2));
     netSimulation.alpha(0.5).restart();
   }
-  if(netZoomBehavior){
-    netSvg.call(netZoomBehavior.transform, d3.zoomIdentity);
-  }
+}
+
+function zoomToFit(padding, animate){
+  if(!netSvg || !netZoomBehavior || !netSimulation) return;
+  const nodesData = netSimulation.nodes();
+  if(!nodesData.length) return;
+  padding = padding || 46;
+  const xs = nodesData.map(d => d.x), ys = nodesData.map(d => d.y);
+  const minX = Math.min(...xs) - padding, maxX = Math.max(...xs) + padding;
+  const minY = Math.min(...ys) - padding, maxY = Math.max(...ys) + padding;
+  const boxW = Math.max(maxX - minX, 1), boxH = Math.max(maxY - minY, 1);
+  const {w, h} = measureNetworkSize();
+  const scale = Math.min(w / boxW, h / boxH, 1.3);
+  const tx = w / 2 - scale * (minX + maxX) / 2;
+  const ty = h / 2 - scale * (minY + maxY) / 2;
+  const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+  const sel = animate ? netSvg.transition().duration(350) : netSvg;
+  sel.call(netZoomBehavior.transform, transform);
 }
 
 function initNetwork(){
@@ -1260,6 +1355,7 @@ function initNetwork(){
   netSvg.on('click', () => selectNetworkNode(null));
 
   netSimulation = d3.forceSimulation(nodes)
+    .alphaDecay(0.045)
     .force('link', d3.forceLink(links).id(d => d.id).distance(90).strength(0.5))
     .force('charge', d3.forceManyBody().strength(-260))
     .force('center', d3.forceCenter(width/2, height/2))
@@ -1267,9 +1363,13 @@ function initNetwork(){
     .on('tick', () => {
       netLinkSel.attr('d', d => `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`);
       netNodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
-    });
+    })
+    .on('end', () => zoomToFit(46, true));
 
-  document.getElementById('net-reset-zoom').addEventListener('click', fitNetworkView);
+  document.getElementById('net-reset-zoom').addEventListener('click', () => {
+    fitNetworkView();
+    zoomToFit(46, true);
+  });
 
   document.getElementById('net-detail-close').addEventListener('click', () => selectNetworkNode(null));
 
@@ -1279,16 +1379,17 @@ function initNetwork(){
   window.addEventListener('resize', () => {
     if(currentView !== 'network') return;
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(fitNetworkView, 150);
+    resizeTimer = setTimeout(() => { fitNetworkView(); zoomToFit(46, false); }, 150);
   });
   window.addEventListener('orientationchange', () => {
     if(currentView !== 'network') return;
-    setTimeout(fitNetworkView, 250);
+    setTimeout(() => { fitNetworkView(); zoomToFit(46, false); }, 250);
   });
 
-  // Let the simulation run briefly to settle, then auto-fit — this is
-  // what replaces needing to press "Reset view" by hand on first load.
-  setTimeout(fitNetworkView, 400);
+
+  // An early, rough fit so the map isn't empty/off-screen while the
+  // simulation is still settling — the precise fit fires on 'end' above.
+  setTimeout(() => zoomToFit(46, false), 500);
 }
 
 function updateNetworkFilterState(){
