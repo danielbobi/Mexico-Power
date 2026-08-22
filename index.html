@@ -555,12 +555,27 @@
     *{transition:none !important;}
   }
 
-  @keyframes paneEnterFromRight{ from{opacity:0; transform:translateX(18px);} to{opacity:1; transform:translateX(0);} }
-  @keyframes paneEnterFromLeft{ from{opacity:0; transform:translateX(-18px);} to{opacity:1; transform:translateX(0);} }
-  .pane-enter{ animation:paneEnterFromRight 0.28s ease; }
-  #timeline-view.pane-enter{ animation-name:paneEnterFromLeft; }
+  /* ---------- View swiper: two pages, side by side ---------- */
+  .view-swiper{
+    display:flex;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    transition:height 0.3s ease;
+  }
+  .view-swiper::-webkit-scrollbar{display:none;}
+  .view-pane{
+    flex:0 0 100%;
+    width:100%;
+    min-width:100%;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+  }
   @media (prefers-reduced-motion: reduce){
-    .pane-enter{animation:none !important;}
+    .view-swiper{scroll-behavior:auto; transition:none;}
   }
 
   /* ---------- Network view ---------- */
@@ -786,35 +801,41 @@
   </div>
 </div>
 
-<div class="timeline-wrap" id="timeline-view">
-  <div class="spine"></div>
-  <div id="timeline-body"></div>
-  <div class="empty-state" id="empty-state" style="display:none;">No one here — try widening the filters.</div>
-</div>
-
-<div class="network-wrap" id="network-view" style="display:none;">
-  <p class="network-hint">Drag any figure to rearrange the map. Click a name to see who shaped them and who they shaped in turn — filters above still apply and dim everyone else. Scroll or pinch to zoom.</p>
-  <div class="network-frame">
-    <button class="net-reset-zoom" id="net-reset-zoom">Reset view</button>
-    <svg id="network-svg"></svg>
-    <div class="net-legend">
-      <div class="legend-row"><span class="swatch succession"></span> Succession — hands to an heir</div>
-      <div class="legend-row"><span class="swatch overthrow"></span> Overthrow — seized by force</div>
-      <div class="legend-row"><span class="swatch rivalry"></span> Rivalry — contested claim</div>
-      <div class="legend-row"><span class="swatch mentorship"></span> Mentorship — patron &amp; protégé</div>
+<div class="view-swiper" id="view-swiper">
+  <div class="view-pane" id="pane-timeline">
+    <div class="timeline-wrap" id="timeline-view">
+      <div class="spine"></div>
+      <div id="timeline-body"></div>
+      <div class="empty-state" id="empty-state" style="display:none;">No one here — try widening the filters.</div>
     </div>
   </div>
-  <div class="net-detail" id="net-detail">
-    <div class="net-detail-top">
-      <div>
-        <div class="net-detail-name" id="net-detail-name"></div>
-        <div class="net-detail-meta" id="net-detail-meta"></div>
+
+  <div class="view-pane" id="pane-network">
+    <div class="network-wrap" id="network-view">
+      <p class="network-hint">Drag any figure to rearrange the map. Click a name to see who shaped them and who they shaped in turn — filters above still apply and dim everyone else. Scroll or pinch to zoom.</p>
+      <div class="network-frame">
+        <button class="net-reset-zoom" id="net-reset-zoom">Reset view</button>
+        <svg id="network-svg"></svg>
+        <div class="net-legend">
+          <div class="legend-row"><span class="swatch succession"></span> Succession — hands to an heir</div>
+          <div class="legend-row"><span class="swatch overthrow"></span> Overthrow — seized by force</div>
+          <div class="legend-row"><span class="swatch rivalry"></span> Rivalry — contested claim</div>
+          <div class="legend-row"><span class="swatch mentorship"></span> Mentorship — patron &amp; protégé</div>
+        </div>
       </div>
-      <div class="net-detail-years" id="net-detail-years"></div>
+      <div class="net-detail" id="net-detail">
+        <div class="net-detail-top">
+          <div>
+            <div class="net-detail-name" id="net-detail-name"></div>
+            <div class="net-detail-meta" id="net-detail-meta"></div>
+          </div>
+          <div class="net-detail-years" id="net-detail-years"></div>
+        </div>
+        <div class="net-detail-text" id="net-detail-text"></div>
+        <div class="net-detail-connections" id="net-detail-connections"></div>
+        <button class="net-detail-close" id="net-detail-close" style="margin-top:12px;">Close</button>
+      </div>
     </div>
-    <div class="net-detail-text" id="net-detail-text"></div>
-    <div class="net-detail-connections" id="net-detail-connections"></div>
-    <button class="net-detail-close" id="net-detail-close" style="margin-top:12px;">Close</button>
   </div>
 </div>
 
@@ -1149,28 +1170,63 @@ function render(){
 
 render();
 
-// ---------- View toggle ----------
+// ---------- View swiper: two pages, side by side ----------
 let currentView = 'timeline';
 const viewToggleEl = document.getElementById('view-toggle');
+const swiperEl = document.getElementById('view-swiper');
+const paneTimelineEl = document.getElementById('pane-timeline');
+const paneNetworkEl = document.getElementById('pane-network');
 const timelineViewEl = document.getElementById('timeline-view');
 const networkViewEl = document.getElementById('network-view');
 let networkInitialized = false;
 
-function switchView(view){
+function activePaneEl(){
+  return currentView === 'network' ? networkViewEl : timelineViewEl;
+}
+
+// The swiper's own height is set to match whichever pane is currently
+// showing, so the page scrolls to exactly the content's length — no
+// leftover blank space, no clipped content, on either pane.
+function syncSwiperHeight(){
+  const h = activePaneEl().scrollHeight;
+  swiperEl.style.height = h + 'px';
+}
+
+function goToPane(view, animate){
+  const targetLeft = view === 'network' ? swiperEl.clientWidth : 0;
+  swiperEl.scrollTo({left: targetLeft, behavior: animate ? 'smooth' : 'auto'});
+}
+
+function onPaneSettled(view){
   if(view === currentView) return;
   currentView = view;
   [...viewToggleEl.children].forEach(b => b.classList.toggle('active', b.dataset.view === view));
-  timelineViewEl.style.display = view === 'timeline' ? '' : 'none';
-  networkViewEl.style.display = view === 'network' ? '' : 'none';
-  const panEl = view === 'network' ? networkViewEl : timelineViewEl;
-  panEl.classList.remove('pane-enter');
-  void panEl.offsetWidth; // restart the animation
-  panEl.classList.add('pane-enter');
   if(view === 'network'){
     if(!networkInitialized){ initNetwork(); networkInitialized = true; }
     else { fitNetworkView(); zoomToFit(46, true); }
     updateNetworkFilterState();
   }
+  syncSwiperHeight();
+}
+
+function switchView(view){
+  if(view === currentView){ goToPane(view, true); return; }
+  goToPane(view, true);
+  // The scroll listener below also catches this, but we don't want to
+  // wait on debounce for a deliberate tap — react immediately too.
+  onPaneSettled(view);
+  // Button taps can happen from anywhere on the page (e.g. right after
+  // landing, before scrolling past the filters) — bring the swiper into
+  // view so the tap actually shows something, without waiting on scroll.
+  requestAnimationFrame(() => {
+    const rect = swiperEl.getBoundingClientRect();
+    const controls = document.querySelector('.controls');
+    const controlsHeight = controls ? controls.getBoundingClientRect().height : 0;
+    if(rect.top < controlsHeight || rect.top > window.innerHeight * 0.6){
+      const targetTop = rect.top + window.scrollY - controlsHeight - 6;
+      window.scrollTo({top: Math.max(targetTop, 0), behavior:'smooth'});
+    }
+  });
 }
 
 viewToggleEl.addEventListener('click', e => {
@@ -1179,51 +1235,22 @@ viewToggleEl.addEventListener('click', e => {
   switchView(btn.dataset.view);
 });
 
-// ---------- Sideways gestures: swipe (touch) and trackpad scroll ----------
-// Swiping/scrolling sideways anywhere switches Timeline ↔ Influence Map.
-// Two exceptions, so this never fights the graph's own pan/zoom/drag:
-//  - a touch or scroll that starts on the network canvas itself is left
-//    alone, UNLESS it starts within an edge strip (an iOS-style "back" swipe)
-const EDGE_ZONE = 28;
-let gestureStartX = 0, gestureStartY = 0, gestureActive = false;
-
-function startsOnNetworkCanvas(target){
-  return !!(target.closest && target.closest('#network-svg'));
-}
-
-document.addEventListener('touchstart', e => {
-  if(e.touches.length !== 1) return;
-  const t = e.touches[0];
-  gestureStartX = t.clientX;
-  gestureStartY = t.clientY;
-  const onCanvas = startsOnNetworkCanvas(e.target);
-  const inEdge = t.clientX <= EDGE_ZONE;
-  gestureActive = !(onCanvas && !inEdge);
+// Detect which pane the swiper has actually settled on (covers real
+// finger swipes and trackpad sideways-scrolls, not just button taps).
+let scrollSettleTimer = null;
+swiperEl.addEventListener('scroll', () => {
+  clearTimeout(scrollSettleTimer);
+  scrollSettleTimer = setTimeout(() => {
+    const index = Math.round(swiperEl.scrollLeft / swiperEl.clientWidth);
+    onPaneSettled(index === 1 ? 'network' : 'timeline');
+  }, 90);
 }, {passive:true});
 
-document.addEventListener('touchend', e => {
-  if(!gestureActive) return;
-  gestureActive = false;
-  const t = e.changedTouches[0];
-  const dx = t.clientX - gestureStartX;
-  const dy = t.clientY - gestureStartY;
-  if(Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
-  if(dx < 0 && currentView === 'timeline') switchView('network');
-  else if(dx > 0 && currentView === 'network') switchView('timeline');
-}, {passive:true});
-
-let wheelCooldown = false;
-document.addEventListener('wheel', e => {
-  if(wheelCooldown) return;
-  if(Math.abs(e.deltaX) < 34 || Math.abs(e.deltaX) < Math.abs(e.deltaY) * 1.2) return;
-  const onCanvas = startsOnNetworkCanvas(e.target);
-  if(onCanvas) return; // let the graph's own zoom/pan handle trackpad gestures there
-  if(e.deltaX > 0 && currentView === 'timeline') switchView('network');
-  else if(e.deltaX < 0 && currentView === 'network') switchView('timeline');
-  else return;
-  wheelCooldown = true;
-  setTimeout(() => { wheelCooldown = false; }, 650);
-}, {passive:true});
+window.addEventListener('resize', () => {
+  // Keep the pane aligned (no half-scrolled state) and re-measure height.
+  goToPane(currentView, false);
+  syncSwiperHeight();
+});
 
 // ---------- Network / influence map ----------
 function currentlyVisibleNames(){
@@ -1409,6 +1436,7 @@ function selectNetworkNode(name){
   if(!name){
     detailEl.classList.remove('open');
     updateNetworkFilterState();
+    requestAnimationFrame(syncSwiperHeight);
     return;
   }
 
@@ -1442,6 +1470,7 @@ function selectNetworkNode(name){
   });
 
   detailEl.classList.add('open');
+  requestAnimationFrame(syncSwiperHeight);
 
   const connected = new Set([name]);
   RELATIONSHIPS.forEach(r => {
@@ -1460,7 +1489,9 @@ const _origRender = render;
 render = function(){
   _origRender();
   if(currentView === 'network') updateNetworkFilterState();
+  else requestAnimationFrame(syncSwiperHeight);
 };
+requestAnimationFrame(syncSwiperHeight);
 </script>
 </body>
 </html>
